@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.elcorp.pocsecurity.security.ApplicationUserRoles.*;
 import static com.elcorp.pocsecurity.security.ApplicationUserPermissions.*;
 
@@ -37,21 +39,33 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 //                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())    // only when a request is processed by the browser
 //                .and()
                 .authorizeRequests()
-                .antMatchers("/","index","/css/*","/js/*").permitAll()
-                .antMatchers("/student/**").hasRole(STUDENT.name())
-//                .antMatchers(HttpMethod.POST,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
-//                .antMatchers(HttpMethod.PUT,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
-//                .antMatchers(HttpMethod.DELETE,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
-//                .antMatchers("/manage/**").hasAnyRole(ADMIN.name(),MANAGER.name())
-                .anyRequest()
+                    .antMatchers("/","index","/css/*","/js/*").permitAll()
+                    .antMatchers("/student/**").hasRole(STUDENT.name())
+//                    .antMatchers(HttpMethod.POST,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
+//                    .antMatchers(HttpMethod.PUT,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
+//                    .antMatchers(HttpMethod.DELETE,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
+//                    .antMatchers("/manage/**").hasAnyRole(ADMIN.name(),MANAGER.name())
+                    .anyRequest()
                 .authenticated()
                 .and()
 //                .httpBasic(); // basic authentication method
                 .formLogin()
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/courses",true)
+                    .loginPage("/login").permitAll()
+                    .defaultSuccessUrl("/courses",true)
+                    .usernameParameter("username")
+                    .passwordParameter("password")
                 .and()
-                .rememberMe();   //default to two weeks
+                .rememberMe()
+                    .tokenValiditySeconds((int)TimeUnit.DAYS.toSeconds(21)) //default to two weeks
+                    .key("somethingverysecure")
+                    .rememberMeParameter("remember-me")
+                .and()
+                .logout()
+                    .logoutUrl("/logout")
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID","remember-me")
+                    .logoutSuccessUrl("/login");
     }
 
     @Override
