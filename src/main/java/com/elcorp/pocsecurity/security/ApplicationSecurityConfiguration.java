@@ -1,5 +1,8 @@
 package com.elcorp.pocsecurity.security;
 
+import com.elcorp.pocsecurity.jwt.ApplicationJWTConfiguration;
+import com.elcorp.pocsecurity.jwt.ApplicationTokenValidator;
+import com.elcorp.pocsecurity.jwt.ApplicationUserAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,9 +12,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.concurrent.TimeUnit;
+import javax.crypto.SecretKey;
 
 import static com.elcorp.pocsecurity.security.ApplicationUserRoles.*;
 
@@ -22,11 +26,17 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 
     private final PasswordEncoder passwordEncoder;
     private final ApplicationUserManager applicationUserManager;
+    private final ApplicationJWTConfiguration applicationJWTConfiguration;
+    private final SecretKey secretKey;
 
     @Autowired
-    public ApplicationSecurityConfiguration(PasswordEncoder passwordEncoder, ApplicationUserManager applicationUserManager) {
+    public ApplicationSecurityConfiguration(
+            PasswordEncoder passwordEncoder, ApplicationUserManager applicationUserManager,
+            ApplicationJWTConfiguration applicationJWTConfiguration, SecretKey secretKey) {
         this.passwordEncoder = passwordEncoder;
         this.applicationUserManager = applicationUserManager;
+        this.applicationJWTConfiguration = applicationJWTConfiguration;
+        this.secretKey = secretKey;
     }
 
     @Override
@@ -34,7 +44,11 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
         http
                 .csrf().disable()   //disable if non-browser
 //                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())    // only when a request is processed by the browser
-//                .and()
+                .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .addFilter(new ApplicationUserAuthentication(authenticationManager(),applicationJWTConfiguration,secretKey))
+                .addFilterAfter(new ApplicationTokenValidator(applicationJWTConfiguration, secretKey),ApplicationUserAuthentication.class)
                 .authorizeRequests()
                     .antMatchers("/","index","/css/*","/js/*").permitAll()
                     .antMatchers("/student/**").hasRole(STUDENT.name())
@@ -43,26 +57,26 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
 //                    .antMatchers(HttpMethod.DELETE,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
 //                    .antMatchers("/manage/**").hasAnyRole(ADMIN.name(),MANAGER.name())
                     .anyRequest()
-                .authenticated()
-                .and()
+                .authenticated();
+//                .and()
 //                .httpBasic(); // basic authentication method
-                .formLogin()
-                    .loginPage("/login").permitAll()
-                    .defaultSuccessUrl("/courses",true)
-                    .usernameParameter("username")
-                    .passwordParameter("password")
-                .and()
-                .rememberMe()
-                    .tokenValiditySeconds((int)TimeUnit.DAYS.toSeconds(21)) //default to two weeks
-                    .key("somethingverysecure")
-                    .rememberMeParameter("remember-me")
-                .and()
-                .logout()
-                    .logoutUrl("/logout")
-                    .clearAuthentication(true)
-                    .invalidateHttpSession(true)
-                    .deleteCookies("JSESSIONID","remember-me")
-                    .logoutSuccessUrl("/login");
+//                .formLogin()  // form based authentication
+//                    .loginPage("/login").permitAll()
+//                    .defaultSuccessUrl("/courses",true)
+//                    .usernameParameter("username")
+//                    .passwordParameter("password")
+//                .and()
+//                .rememberMe()
+//                    .tokenValiditySeconds((int)TimeUnit.DAYS.toSeconds(21)) //default to two weeks
+//                    .key("somethingverysecure")
+//                    .rememberMeParameter("remember-me")
+//                .and()
+//                .logout()
+//                    .logoutUrl("/logout")
+//                    .clearAuthentication(true)
+//                    .invalidateHttpSession(true)
+//                    .deleteCookies("JSESSIONID","remember-me")
+//                    .logoutSuccessUrl("/login");
     }
 
     @Override
