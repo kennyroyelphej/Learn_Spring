@@ -3,22 +3,17 @@ package com.elcorp.pocsecurity.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import java.util.concurrent.TimeUnit;
 
 import static com.elcorp.pocsecurity.security.ApplicationUserRoles.*;
-import static com.elcorp.pocsecurity.security.ApplicationUserPermissions.*;
 
 @Configuration
 @EnableWebSecurity
@@ -26,10 +21,12 @@ import static com.elcorp.pocsecurity.security.ApplicationUserPermissions.*;
 public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationUserManager applicationUserManager;
 
     @Autowired
-    public ApplicationSecurityConfiguration(PasswordEncoder passwordEncoder) {
+    public ApplicationSecurityConfiguration(PasswordEncoder passwordEncoder, ApplicationUserManager applicationUserManager) {
         this.passwordEncoder = passwordEncoder;
+        this.applicationUserManager = applicationUserManager;
     }
 
     @Override
@@ -69,29 +66,43 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
     }
 
     @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(daoAuthenticationProvider());
+    }
+
     @Bean
-    protected UserDetailsService userDetailsService() {
-        UserDetails june = User.builder()
-                .username("june")
-                .password(passwordEncoder.encode("password"))
+    public DaoAuthenticationProvider daoAuthenticationProvider(){
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder);
+        provider.setUserDetailsService(applicationUserManager);
+        return provider;
+    }
+
+//    @Override
+//    @Bean
+//    protected UserDetailsService userDetailsService() {
+//        UserDetails june = User.builder()
+//                .username("june")
+//                .password(passwordEncoder.encode("password"))
 //                .roles("STUDENT")
 //                .roles(STUDENT.name())  //ROLE_STUDENT
-                .authorities(STUDENT.getGrantedAuthorities())
-                .build();
-        UserDetails regina = User.builder()
-                .username("regina")
-                .password(passwordEncoder.encode("password"))
+//                .authorities(STUDENT.getGrantedAuthorities())
+//                .build();
+//        UserDetails regina = User.builder()
+//                .username("regina")
+//                .password(passwordEncoder.encode("password"))
 //                .roles("ADMIN")
 //                .roles(ADMIN.name())  //ROLE_ADMIN
-                .authorities(ADMIN.getGrantedAuthorities())
-                .build();
-        UserDetails danny = User.builder()
-                .username("danny")
-                .password(passwordEncoder.encode("password"))
+//                .authorities(ADMIN.getGrantedAuthorities())
+//                .build();
+//        UserDetails danny = User.builder()
+//                .username("danny")
+//                .password(passwordEncoder.encode("password"))
 //                .roles("MANAGER")
 //                .roles(MANAGER.name())  //ROLE_MANAGER
-                .authorities(MANAGER.getGrantedAuthorities())
-                .build();
-        return new InMemoryUserDetailsManager( june, regina, danny );
-    }
+//                .authorities(MANAGER.getGrantedAuthorities())
+//                .build();
+//        return new InMemoryUserDetailsManager( june, regina, danny );
+//    }
+
 }
