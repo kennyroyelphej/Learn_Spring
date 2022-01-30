@@ -52,6 +52,7 @@ public class ApplicationSecurityConfiguration extends WebSecurityConfigurerAdapt
                 .authorizeRequests()
                     .antMatchers("/","index","/css/*","/js/*").permitAll()
                     .antMatchers("/student/**").hasRole(STUDENT.name())
+                    .antMatchers("/manage/user").permitAll()
 //                    .antMatchers(HttpMethod.POST,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
 //                    .antMatchers(HttpMethod.PUT,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())
 //                    .antMatchers(HttpMethod.DELETE,"/manage/**").hasAuthority(STUDENT_WRITE.getPermission())

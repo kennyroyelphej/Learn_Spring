@@ -1,72 +1,43 @@
 package com.elcorp.pocsecurity.entity;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.Collection;
-import java.util.Set;
+import javax.persistence.*;
 
-public class ApplicationUser implements UserDetails {
+@Entity
+@Table(
+        name="application_user",
+        uniqueConstraints = @UniqueConstraint(
+                name = "unique_username",
+                columnNames = "username"
+        )
+)
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ApplicationUser {
 
-    private final String username;
-    private final String password;
-    private final Set<? extends GrantedAuthority> grantedAuthority;
-    private  final boolean isAccountNonExpired;
-    private  final boolean isAccountNonLocked;
-    private  final boolean isCredentialsNonExpired;
-    private  final boolean isEnabled;
-
-    public ApplicationUser(
-            String username,
-            String password,
-            Set<? extends GrantedAuthority> grantedAuthority,
-            boolean isAccountNonExpired,
-            boolean isAccountNonLocked,
-            boolean isCredentialsNonExpired,
-            boolean isEnabled
-    ) {
-        this.username = username;
-        this.password = password;
-        this.grantedAuthority = grantedAuthority;
-        this.isAccountNonExpired = isAccountNonExpired;
-        this.isAccountNonLocked = isAccountNonLocked;
-        this.isCredentialsNonExpired = isCredentialsNonExpired;
-        this.isEnabled = isEnabled;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return grantedAuthority;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return isAccountNonExpired;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return isAccountNonLocked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return isCredentialsNonExpired;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return isEnabled;
-    }
+    @Id
+    @SequenceGenerator(
+            name = "user_sequence",
+            sequenceName = "user_sequence",
+            allocationSize = 1
+    )
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "user_sequence"
+    )
+    private Long userId;
+    private String username;
+    private String password;
+    private String role;
+    private  boolean isAccountNonExpired;
+    private  boolean isAccountNonLocked;
+    private  boolean isCredentialsNonExpired;
+    private  boolean isEnabled;
 
 }
