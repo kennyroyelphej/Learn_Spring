@@ -7,5 +7,6 @@ The Spring Framework is an application framework and inversion of control contai
 
 - [Introduction to Java](https://github.com/kennyroyelphej/learn_spring/tree/introduction_to_java)
 - [Introduction to Spring](https://github.com/kennyroyelphej/learn_spring/tree/introduction_to_spring)
+- [Spring MVC](https://github.com/kennyroyelphej/learn_spring/tree/spring_mvc)
 - [Spring Data JPA](https://github.com/kennyroyelphej/learn_spring/tree/spring_data_jpa)
 - [Spring Security](https://github.com/kennyroyelphej/learn_spring/tree/spring_security)
