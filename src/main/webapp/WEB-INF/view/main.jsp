@@ -8,6 +8,7 @@
 	<h4>Student Management</h4>
 	<ul>
 		<li><a href="student/form">Create Student</a></li>
+		<li><a href="customer/form">Create Customer</a></li>
 	</ul>
 	<br>
 	<a href="feedback/form">Submit Feedback</a>

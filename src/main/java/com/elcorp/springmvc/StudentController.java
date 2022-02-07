@@ -20,6 +20,7 @@ public class StudentController {
 	public String processStudent(@ModelAttribute("student") Student student, Model model) {
 		model.addAttribute("title","ElCorp Student Creation");
 		model.addAttribute("message", student.getFirstName() + " " + student.getLastName() + " has been created successfully");
+		model.addAttribute("student", student);
 		return "student-created";
 	}
 
